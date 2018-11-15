@@ -30,13 +30,7 @@ class StoryList {
     // fetch stories from API
     $.getJSON(`${BASE_URL}/stories`, function(response) {
       const stories = response.stories.map(function(story) {
-        return new Story(
-          story.author,
-          story.title,
-          story.url,
-          story.username,
-          story.storyId
-        );
+        return new Story(story);
       });
       const newStoryList = new StoryList(stories);
       return probablyDOMStuff(newStoryList);
@@ -48,41 +42,47 @@ class StoryList {
       `${BASE_URL}/stories`,
       { token: user.loginToken, story: protoStoryObj },
       function(response) {
+        let newStory = new Story(response.story);
+        this.stories.push(newStory);
         // callback for retrieveDetails is unclear
-        user.retrieveDetails(unclearCallback);
-        // prompt indicates that response will be an updated list of stories.
-        // May need to call other methods on it
-        probablyDOMStuff(response);
+        user.retrieveDetails(() => probablyDOMStuff(newStory));
       }
     );
   }
 
-  removeStory(storyId, probablyDOMStuff) {
+  removeStory(user, storyId, probablyDOMStuff) {
     $.ajax(
       {
         url: `${BASE_URL}/stories/${storyId}`,
         type: "DELETE",
-        data: { token: localStorage.getItem("token") }
+        data: { token: user.loginToken }
       },
-      response => {
+      () => {
+        let storyListIndex = this.findIndex(story => story.storyId === storyId);
+        this.splice(storyListIndex, 1);
+        storyListIndex = user.ownStories.findIndex(
+          story => story.storyId === storyId
+        );
+        user.ownStories.splice(storyListIndex, 1);
         // prompt indicates that response will be an updated list of stories.
         // May need to call other methods on it
-        probablyDOMStuff(response);
+        probablyDOMStuff(this);
       }
     );
   }
 }
 
 class User {
-  constructor(username, password, name) {
+  constructor(username, password, name, token) {
     (this.username = username),
       (this.password = password),
       (this.name = name),
-      (this.loginToken = ""),
+      (this.loginToken = token),
       (this.favorites = []),
       (this.ownStories = []),
+      this.createdAt = ''; //assigned when creating or retrieveDetails
+      this.updatedAt = ''; //assigned when creating or retrieveDetails
       (this.login = this.login.bind(this)),
-      (this.updateUserAndToken = this.updateUserAndToken.bind(this)),
       (this.retrieveDetails = this.retrieveDetails.bind(this));
   }
 
@@ -92,8 +92,11 @@ class User {
       `${BASE_URL}/signup`,
       { user: { username, password, name } },
       function(response) {
-        user = new User(response.user.username, password, response.user.name);
-        console.log(user);
+        let user = new User(response.user.username, password, response.user.name, response.token);
+        localStorage.setItem('token', response.token);
+        user.createdAt = response.user.createdAt;
+        user.updatedAt = response.user.updatedAt;
+        // solution and prompt differ. Solution returns the new user object
         probablyDOMStuff(response);
       }
     );
@@ -106,19 +109,34 @@ class User {
       { user: { username: this.username, password: this.password } },
       response => {
         this.loginToken = response.token;
+        localStorage.setItem("token", response.token);
+        // solution and prompt differ. Solution returns the user object
         probablyDOMStuff(response);
-      });
+      }
+    );
+  }
+  
+  retrieveDetails(probablyDOMStuff) {
+    $.get(`${BASE_URL}/users/${this.username}`, response => {
+      this.favorites = response.user.favorites.map(
+        favorite => new Story(favorite)
+      );
+      this.ownStories = response.user.stories.map(story => new Story(story));
+      this.name = response.user.name;
+      this.createdAt = response.user.createdAt;
+      this.updatedAt = response.user.updatedAt;
+
+      probablyDOMStuff(this);
+    });
   }
 
   addFavorite(storyId, probablyDOMStuff) {
     $.post(
       `${BASE_URL}/users/${user.username}/favorites/${storyId}`,
       { token: this.loginToken },
-      response => {
-        // Callback is unclear
-        this.retrieveDetails(unclearCallback);
+      () => {
         // Callback contents unclear. Assume favorites due to method name
-        probablyDOMStuff(response.user.favorites);
+        this.retrieveDetails(() => probablyDOMStuff(this));
       }
     );
   }
@@ -130,57 +148,41 @@ class User {
         type: "DELETE",
         data: { token: localStorage.getItem("token") }
       },
-      response => {
-        // Callback is unclear
-        // once we get update the database with the delete
-        // we need to update client favorites
-        this.retrieveDetails(unclearCallback);
+      () => {
         // Callback contents unclear. Assume favorites due to method name
-        probablyDOMStuff(this.favorites);
+        this.retrieveDetails(() => probablyDOMStuff(this));
       }
     );
   }
 
-  retrieveDetails(probablyDOMStuff) {
-    $.get(`${BASE_URL}/users/${this.username}`, response => {
-      this.favorites = response.user.favorites.map(favorite => new Story(favorite));
-      this.ownStories = response.user.stories.map(story => new Story(story));
-      console.log(this.favorites);
-      probablyDOMStuff(this);
-    });
-  }
-
-  update(userData, probablyDOMStuff){
-      const { username, favorites, ...userDetails} = userData
-      $.ajax (
-      {url: `${BASE_URL}/users/${this.username}`,
-      type: "PATCH",
-      data: { token: localStorage.getItem("token") , user : userDetails }
-      }, response => {
-        this.name = userDetails.name || this.name; 
+  update(userData, probablyDOMStuff) {
+    const { username, favorites, ...userDetails } = userData;
+    $.ajax(
+      {
+        url: `${BASE_URL}/users/${this.username}`,
+        type: "PATCH",
+        data: { token: localStorage.getItem("token"), user: userDetails }
+      },
+      () => {
+        this.name = response.user.name;
         this.password = userDetails.password || this.password;
         probablyDOMStuff(this);
-      });
+      }
+    );
   }
 
-  remove(probablyDOMStuff){
-    $.ajax (
-      {url: `${BASE_URL}/users/${this.username}`,
-      type: "DELETE",
-      data: { token: localStorage.getItem("token")}
-      }, response => {
-        probablyDOMStuff(response);
-      });
-  }
-
-
-  // might need to remove this : 
-  updateUserAndToken(response) {
-    this.loginToken = response.token;
-    localStorage.setItem("token", response.token);
-    localStorage.setItem("user", JSON.stringify(this));
+  remove(probablyDOMStuff) {
+    $.ajax(
+      {
+        url: `${BASE_URL}/users/${this.username}`,
+        type: "DELETE",
+        data: { token: this.loginToken }
+      },
+        probablyDOMStuff
+    );
   }
 }
+
 
 class Story {
   constructor(storyDetails) {
@@ -190,21 +192,22 @@ class Story {
       (this.username = storyDetails.username),
       (this.storyId = storyDetails.storyId);
   }
-  
-  update(user, storyData, probablyDOMStuff){
-    const { storyId, ...storyDetails} = storyData
-    $.ajax (
-      {url: `${BASE_URL}/stories/${storyId}`,
-      type: "PATCH",
-      data: { token: localStorage.getItem("token")
-      story: storyDetails}  
-    }, response => {
-      const updatedStory = new Story(response.story);
-      let indexOfStory = storyList.stories.findIndex((item) => item.storyId === storyId);
-      storyList.stories.splice(indexOfStory, 1, updatedStory);
-      indexOfStory = user.ownStories.findIndex((item) => item.storyId === storyId);
-      user.ownStories.splice(indexOfStory, 1, updatedStory);
-      probablyDOMStuff(response.story);
-    });
+
+  update(user, storyData, probablyDOMStuff) {
+    const { storyId, ...storyDetails } = storyData;
+    $.ajax(
+      {
+        url: `${BASE_URL}/stories/${storyId}`,
+        type: "PATCH",
+        data: { token: user.loginToken, story: storyDetails }
+      },
+      response => {
+        this.author = response.story.author;
+        this.title = response.story.title;
+        this.url = response.story.url;
+        
+        probablyDOMStuff(this);
+      }
+    );
   }
 }

@@ -1,0 +1,70 @@
+body {
+  margin: 8px;
+}
+
+.navbar a,
+.navbar a:hover {
+  color: #000000;
+}
+
+.navbar {
+  background-color: #e95420;
+  border-color: #d34615;
+}
+
+.navbar {
+  margin-bottom: 0;
+}
+
+.form-horizontal {
+  padding: 20px 0;
+}
+
+#new-form,
+#stories {
+  background-color: #f6f6ef;
+}
+
+#new-form {
+  display: none;
+}
+
+#stories > li {
+  color: #828282;
+  padding: 5px 0;
+}
+
+#submit:active,
+#submit:focus,
+#favorites:active,
+#favorites:focus {
+  text-decoration: none;
+}
+
+#submit:hover,
+#favorites:hover {
+  text-decoration: underline;
+}
+
+#stories > li > a,
+#stories > li > a:hover {
+  color: #000000;
+  text-decoration: none;
+}
+
+small {
+  margin-left: 3px;
+}
+
+#stories > li > small:hover {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.hide-numbers {
+  list-style: none;
+}
+
+.glyphicon:hover {
+  cursor: pointer;
+}

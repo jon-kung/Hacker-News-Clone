@@ -3,16 +3,93 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Document</title>
+  <link rel="stylesheet"
+        href="https://maxcdn.bootstrapcdn.com/bootswatch/4.1.3/united/bootstrap.css">
+  <link rel="stylesheet"
+        href="https://use.fontawesome.com/releases/v5.3.1/css/all.css">
+  <link rel="stylesheet" href="style.css">
+  <script
+  src="http://code.jquery.com/jquery-3.3.1.min.js"
+  integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+  crossorigin="anonymous"></script>
+  <script src='api-classes.js'></script>
+  <script src='scripts.js'></script>
 </head>
 
-<body>
-  <h1>Open up the chrome console!</h1>
-  <script src="https://code.jquery.com/jquery-3.3.1.js" integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
-    crossorigin="anonymous"></script>
-  <script src="api-classes.js"></script>
+<body class="container">
+<nav class="navbar navbar-expand-lg">
+    <span class="navbar-brand">
+      <b>Hack or Snooze</b>
+    </span>
+
+  <ul class="navbar-nav mr-auto">
+    <li class="nav-item">
+      <a href="javascript:void(0)" class="nav-link" id="submit">submit</a>
+    </li>
+    <li class="nav-item">
+      <a href="javascript:void(0)" class="nav-link" id="favorites">favorites</a>
+    </li>
+</nav>
+
+<div id="new-form">
+  <form class="form-horizontal">
+    <div class="form-group row">
+      <label for="title" class="pl-4 col-sm-1 form-label">title</label>
+      <div class="col-sm-6">
+        <input required type="text" class="form-control" id="title"
+               autocomplete="off">
+      </div>
+    </div>
+    <div class="form-group row">
+      <label for="url" class="pl-4 col-sm-1 form-label">url</label>
+      <div class="col-sm-6">
+        <input required type="url" class="form-control" id="url"
+               autocomplete="off">
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="col-sm-offset-2 col-sm-10">
+        <button type="submit" class="btn btn-primary">submit</button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<ol id="stories">
+  <li>
+    <span class="far fa-star"></span>
+    <a target="_blank" href="https://visualgo.net/">Visualizing Algorithms</a>
+    <small>(visualgo.net)</small>
+  </li>
+  <li>
+    <span class="far fa-star"></span>
+    <a target="_blank"
+       href="https://www.rithmschool.com/blog/problem-solving-strategies-01">
+      Problem Solving with Rithm</a>
+    <small>(rithmschool.com)</small>
+  </li>
+  <li>
+    <span class="far fa-star"></span>
+    <a target="_blank"
+       href="https://www.amazon.com/Power-Up-Unlocking-Hidden-Mathematics-Video/dp/0691161518/">
+      Buy this book!</a>
+    <small>(amazon.com)</small>
+  </li>
+  <li>
+    <span class="far fa-star"></span>
+    <a target="_blank" href="https://github.com/whiskey-the-dog">
+      Dogs on GitHub</a>
+    <small>(github.com)</small>
+  </li>
+  <li>
+    <span class="far fa-star"></span>
+    <a href="https://www.rithmschool.com/blog/problem-solving-strategies-02">
+      MOAR PROBLEM SOLVING</a>
+    <small>(rithmschool.com)</small>
+  </li>
+</ol>
+
 </body>
 
 </html>
