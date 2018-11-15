@@ -104,10 +104,10 @@ class User {
     $.post(
       `${BASE_URL}/login`,
       { user: { username: this.username, password: this.password } },
-      function(response) {
+      response => {
+        this.loginToken = response.token;
         probablyDOMStuff(response);
-      }
-    );
+      });
   }
 
   addFavorite(storyId, probablyDOMStuff) {
@@ -132,22 +132,49 @@ class User {
       },
       response => {
         // Callback is unclear
+        // once we get update the database with the delete
+        // we need to update client favorites
         this.retrieveDetails(unclearCallback);
         // Callback contents unclear. Assume favorites due to method name
-        probablyDOMStuff(response.user.favorites);
+        probablyDOMStuff(this.favorites);
       }
     );
   }
 
   retrieveDetails(probablyDOMStuff) {
     $.get(`${BASE_URL}/users/${this.username}`, response => {
-      this.favorites = response.user.favorites;
-      this.ownStories = response.user.stories;
+      this.favorites = response.user.favorites.map(favorite => new Story(favorite));
+      this.ownStories = response.user.stories.map(story => new Story(story));
       console.log(this.favorites);
       probablyDOMStuff(this);
     });
   }
 
+  update(userData, probablyDOMStuff){
+      const { username, favorites, ...userDetails} = userData
+      $.ajax (
+      {url: `${BASE_URL}/users/${this.username}`,
+      type: "PATCH",
+      data: { token: localStorage.getItem("token") , user : userDetails }
+      }, response => {
+        this.name = userDetails.name || this.name; 
+        this.password = userDetails.password || this.password;
+        probablyDOMStuff(this);
+      });
+  }
+
+  remove(probablyDOMStuff){
+    $.ajax (
+      {url: `${BASE_URL}/users/${this.username}`,
+      type: "DELETE",
+      data: { token: localStorage.getItem("token")}
+      }, response => {
+        probablyDOMStuff(response);
+      });
+  }
+
+
+  // might need to remove this : 
   updateUserAndToken(response) {
     this.loginToken = response.token;
     localStorage.setItem("token", response.token);
@@ -156,11 +183,28 @@ class User {
 }
 
 class Story {
-  constructor(author, title, url, username, storyId) {
-    (this.author = author),
-      (this.title = title),
-      (this.url = url),
-      (this.username = username),
-      (this.storyId = storyId);
+  constructor(storyDetails) {
+    (this.author = storyDetails.author),
+      (this.title = storyDetails.title),
+      (this.url = storyDetails.url),
+      (this.username = storyDetails.username),
+      (this.storyId = storyDetails.storyId);
+  }
+  
+  update(user, storyData, probablyDOMStuff){
+    const { storyId, ...storyDetails} = storyData
+    $.ajax (
+      {url: `${BASE_URL}/stories/${storyId}`,
+      type: "PATCH",
+      data: { token: localStorage.getItem("token")
+      story: storyDetails}  
+    }, response => {
+      const updatedStory = new Story(response.story);
+      let indexOfStory = storyList.stories.findIndex((item) => item.storyId === storyId);
+      storyList.stories.splice(indexOfStory, 1, updatedStory);
+      indexOfStory = user.ownStories.findIndex((item) => item.storyId === storyId);
+      user.ownStories.splice(indexOfStory, 1, updatedStory);
+      probablyDOMStuff(response.story);
+    });
   }
 }
