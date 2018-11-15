@@ -1,4 +1,4 @@
-const BASE_URL = 'https://hack-or-snooze-v2.herokuapp.com';
+const BASE_URL = "https://hack-or-snooze-v2.herokuapp.com";
 let storyList;
 let user;
 
@@ -7,16 +7,16 @@ function login(username, password) {
 }
 
 function storeToken(response) {
-  localStorage.setItem('token', response.token);
+  localStorage.setItem("token", response.token);
 }
 
 function getToken() {
-  let token = localStorage.getItem('token');
+  let token = localStorage.getItem("token");
   if (token) {
     return token;
   } else {
-    alert('Please login first.');
-    return new Error('No token found, login first');
+    alert("Please login first.");
+    return new Error("No token found, login first");
   }
 }
 
@@ -44,7 +44,32 @@ class StoryList {
   }
 
   addStory(user, protoStoryObj, probablyDOMStuff) {
-    $.post();
+    $.post(
+      `${BASE_URL}/stories`,
+      { token: user.loginToken, story: protoStoryObj },
+      function(response) {
+        // callback for retrieveDetails is unclear
+        user.retrieveDetails(unclearCallback);
+        // prompt indicates that response will be an updated list of stories.
+        // May need to call other methods on it
+        probablyDOMStuff(response);
+      }
+    );
+  }
+
+  removeStory(storyId, probablyDOMStuff) {
+    $.ajax(
+      {
+        url: `${BASE_URL}/stories/${storyId}`,
+        type: "DELETE",
+        data: { token: localStorage.getItem("token") }
+      },
+      response => {
+        // prompt indicates that response will be an updated list of stories.
+        // May need to call other methods on it
+        probablyDOMStuff(response);
+      }
+    );
   }
 }
 
@@ -53,7 +78,7 @@ class User {
     (this.username = username),
       (this.password = password),
       (this.name = name),
-      (this.loginToken = ''),
+      (this.loginToken = ""),
       (this.favorites = []),
       (this.ownStories = []),
       (this.login = this.login.bind(this)),
@@ -85,9 +110,37 @@ class User {
     );
   }
 
-  // does this need binding?
+  addFavorite(storyId, probablyDOMStuff) {
+    $.post(
+      `${BASE_URL}/users/${user.username}/favorites/${storyId}`,
+      { token: this.loginToken },
+      response => {
+        // Callback is unclear
+        this.retrieveDetails(unclearCallback);
+        // Callback contents unclear. Assume favorites due to method name
+        probablyDOMStuff(response.user.favorites);
+      }
+    );
+  }
+
+  removeFavorite(storyId, probablyDOMStuff) {
+    $.ajax(
+      {
+        url: `${BASE_URL}/users/${user.username}/favorites/${storyId}`,
+        type: "DELETE",
+        data: { token: localStorage.getItem("token") }
+      },
+      response => {
+        // Callback is unclear
+        this.retrieveDetails(unclearCallback);
+        // Callback contents unclear. Assume favorites due to method name
+        probablyDOMStuff(response.user.favorites);
+      }
+    );
+  }
+
   retrieveDetails(probablyDOMStuff) {
-    $.get(`${BASE_URL}/users/${this.username}`, function(response) {
+    $.get(`${BASE_URL}/users/${this.username}`, response => {
       this.favorites = response.user.favorites;
       this.ownStories = response.user.stories;
       console.log(this.favorites);
@@ -97,8 +150,8 @@ class User {
 
   updateUserAndToken(response) {
     this.loginToken = response.token;
-    localStorage.setItem('token', response.token);
-    localStorage.setItem('user', JSON.stringify(this));
+    localStorage.setItem("token", response.token);
+    localStorage.setItem("user", JSON.stringify(this));
   }
 }
 
