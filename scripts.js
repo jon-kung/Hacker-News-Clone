@@ -53,6 +53,9 @@ $(function() {
     user = User.login(username, password, function(response) {
       $('p.display-user').text(response.user.username);
       $('#login-form>form').trigger('reset');
+      console.log(`pre-reload`);
+      location.reload();
+      console.log(`post-reload`);
       $loginForm.slideToggle();
     });
   });

@@ -108,12 +108,14 @@ class User {
 
   // probablyDOMStuff function should update user's login token and global user variable
   static login(username, password, probablyDOMStuff) {
+    console.log(`just starting login`);
     $.post(`${BASE_URL}/login`, { user: { username, password } }, response => {
       user = new User(
         response.user.username,
         response.user.name,
         response.token
       );
+      console.log(`in User.login`);
       localStorage.setItem('username', response.user.username);
       localStorage.setItem('token', response.token);
       user.createdAt = response.user.createdAt;
