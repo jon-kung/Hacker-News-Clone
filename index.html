@@ -30,7 +30,77 @@
     <li class="nav-item">
       <a href="javascript:void(0)" class="nav-link" id="favorites">favorites</a>
     </li>
+  </ul>
+
+    <span class="nav-item">
+      <a href="javascript:void(0)" class="nav-link" id="menu-login">Login</a>
+    </span>
+
+    <span class="nav-item">
+        <a href="javascript:void(0)" class="nav-link" id="menu-signup">Sign Up</a>
+      </span>
+
+    <span class="nav-item text-center text-dark">
+      Logged in as: <p class="display-user"></p>
+    </span>
+    
+
 </nav>
+
+<div id="login-form">
+  <form class="form-horizontal">
+    <div class="form-group row">
+      <label for="login-username" class="pl-4 col-sm-1 form-label">Username</label>
+      <div class="col-sm-6 ml-5">
+        <input required type="text" class="form-control" id="login-username"
+               autocomplete="off">
+      </div>
+    </div>
+    <div class="form-group row">
+      <label for="login-password" class="pl-4 col-sm-1 form-label">Password</label>
+      <div class="col-sm-6 ml-5">
+        <input required type="password" class="form-control" id="login-password"
+               autocomplete="off">
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="col-sm-offset-2 col-sm-10">
+        <button type="submit" class="btn btn-primary">Login</button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<div id="signup-form">
+  <form class="form-horizontal">
+    <div class="form-group row">
+      <label for="signup-username" class="pl-4 col-sm-1 form-label">Username</label>
+      <div class="col-sm-6 ml-5">
+        <input required type="text" class="form-control" id="signup-username"
+               autocomplete="off">
+      </div>
+    </div>
+    <div class="form-group row">
+        <label for="signup-name" class="pl-4 col-sm-1 form-label">Name</label>
+        <div class="col-sm-6 ml-5">
+          <input required type="text" class="form-control" id="signup-name"
+                 autocomplete="off">
+        </div>
+      </div>
+    <div class="form-group row">
+      <label for="signup-password" class="pl-4 col-sm-1 form-label">Password</label>
+      <div class="col-sm-6 ml-5">
+        <input required type="password" class="form-control" id="signup-password"
+               autocomplete="off">
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="col-sm-offset-2 col-sm-10">
+        <button type="submit" class="btn btn-primary">Sign Up</button>
+      </div>
+    </div>
+  </form>
+</div>
 
 <div id="new-form">
   <form class="form-horizontal">
@@ -57,7 +127,7 @@
 </div>
 
 <ol id="stories">
-  <li>
+  <!-- <li>
     <span class="far fa-star"></span>
     <a target="_blank" href="https://visualgo.net/">Visualizing Algorithms</a>
     <small>(visualgo.net)</small>
@@ -87,7 +157,7 @@
     <a href="https://www.rithmschool.com/blog/problem-solving-strategies-02">
       MOAR PROBLEM SOLVING</a>
     <small>(rithmschool.com)</small>
-  </li>
+  </li> -->
 </ol>
 
 </body>

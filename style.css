@@ -21,11 +21,15 @@ body {
 }
 
 #new-form,
-#stories {
+#stories,
+#login-form,
+#signup-form {
   background-color: #f6f6ef;
 }
 
-#new-form {
+#new-form,
+#login-form,
+#signup-form {
   display: none;
 }
 
