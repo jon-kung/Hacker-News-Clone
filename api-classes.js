@@ -1,4 +1,4 @@
-const BASE_URL = 'https://hack-or-snooze-v2.herokuapp.com';
+const BASE_URL = "https://hack-or-snooze-v2.herokuapp.com";
 let storyList;
 let user;
 
@@ -23,6 +23,7 @@ let user;
 class StoryList {
   constructor(stories) {
     this.stories = stories;
+    this.addStory = this.addStory.bind(this);
   }
 
   static getStories(probablyDOMStuff) {
@@ -40,9 +41,9 @@ class StoryList {
     $.post(
       `${BASE_URL}/stories`,
       { token: user.loginToken, story: protoStoryObj },
-      function(response) {
+      response => {
         let newStory = new Story(response.story);
-        this.stories.push(newStory);
+        this.stories.unshift(newStory);
         // callback for retrieveDetails is unclear
         user.retrieveDetails(() => probablyDOMStuff(newStory));
       }
@@ -53,7 +54,7 @@ class StoryList {
     $.ajax(
       {
         url: `${BASE_URL}/stories/${storyId}`,
-        type: 'DELETE',
+        type: "DELETE",
         data: { token: user.loginToken }
       },
       () => {
@@ -78,8 +79,8 @@ class User {
       (this.loginToken = token),
       (this.favorites = []),
       (this.ownStories = []),
-      (this.createdAt = ''); //assigned when creating or retrieveDetails
-    this.updatedAt = ''; //assigned when creating or retrieveDetails
+      (this.createdAt = ""); //assigned when creating or retrieveDetails
+    this.updatedAt = ""; //assigned when creating or retrieveDetails
   }
 
   //probablyDOMStuff should update global user
@@ -93,8 +94,8 @@ class User {
           response.user.name,
           response.token
         );
-        localStorage.setItem('username', response.user.username);
-        localStorage.setItem('token', response.token);
+        localStorage.setItem("username", response.user.username);
+        localStorage.setItem("token", response.token);
         user.createdAt = response.user.createdAt;
         user.updatedAt = response.user.updatedAt;
         // solution and prompt differ. Solution returns the new user object
@@ -111,8 +112,8 @@ class User {
         response.user.name,
         response.token
       );
-      localStorage.setItem('username', response.user.username);
-      localStorage.setItem('token', response.token);
+      localStorage.setItem("username", response.user.username);
+      localStorage.setItem("token", response.token);
       user.createdAt = response.user.createdAt;
       user.updatedAt = response.user.updatedAt;
       // solution and prompt differ. Solution returns the user object
@@ -121,17 +122,21 @@ class User {
   }
 
   retrieveDetails(probablyDOMStuff) {
-    $.get(`${BASE_URL}/users/${this.username}`, response => {
-      this.favorites = response.user.favorites.map(
-        favorite => new Story(favorite)
-      );
-      this.ownStories = response.user.stories.map(story => new Story(story));
-      this.name = response.user.name;
-      this.createdAt = response.user.createdAt;
-      this.updatedAt = response.user.updatedAt;
+    $.get(
+      `${BASE_URL}/users/${this.username}`,
+      { token: this.loginToken },
+      response => {
+        this.favorites = response.user.favorites.map(
+          favorite => new Story(favorite)
+        );
+        this.ownStories = response.user.stories.map(story => new Story(story));
+        this.name = response.user.name;
+        this.createdAt = response.user.createdAt;
+        this.updatedAt = response.user.updatedAt;
 
-      probablyDOMStuff(this);
-    });
+        probablyDOMStuff(this);
+      }
+    );
   }
 
   addFavorite(storyId, probablyDOMStuff) {
@@ -139,24 +144,22 @@ class User {
       `${BASE_URL}/users/${user.username}/favorites/${storyId}`,
       { token: this.loginToken },
       () => {
-        // Callback contents unclear. Assume favorites due to method name
         this.retrieveDetails(() => probablyDOMStuff(this));
       }
     );
   }
 
   removeFavorite(storyId, probablyDOMStuff) {
-    $.ajax(
-      {
-        url: `${BASE_URL}/users/${user.username}/favorites/${storyId}`,
-        type: 'DELETE',
-        data: { token: localStorage.getItem('token') }
-      },
-      () => {
-        // Callback contents unclear. Assume favorites due to method name
-        this.retrieveDetails(() => probablyDOMStuff(this));
+    $.ajax({
+      url: `${BASE_URL}/users/${user.username}/favorites/${storyId}`,
+      type: "DELETE",
+      data: {
+        token: this.loginToken,
+        success: () => {
+          this.retrieveDetails(() => probablyDOMStuff(this));
+        }
       }
-    );
+    });
   }
 
   update(userData, probablyDOMStuff) {
@@ -164,8 +167,8 @@ class User {
     $.ajax(
       {
         url: `${BASE_URL}/users/${this.username}`,
-        type: 'PATCH',
-        data: { token: localStorage.getItem('token'), user: userDetails }
+        type: "PATCH",
+        data: { token: localStorage.getItem("token"), user: userDetails }
       },
       () => {
         this.name = response.user.name;
@@ -179,7 +182,7 @@ class User {
     $.ajax(
       {
         url: `${BASE_URL}/users/${this.username}`,
-        type: 'DELETE',
+        type: "DELETE",
         data: { token: this.loginToken }
       },
       probablyDOMStuff
@@ -201,7 +204,7 @@ class Story {
     $.ajax(
       {
         url: `${BASE_URL}/stories/${storyId}`,
-        type: 'PATCH',
+        type: "PATCH",
         data: { token: user.loginToken, story: storyDetails }
       },
       response => {
