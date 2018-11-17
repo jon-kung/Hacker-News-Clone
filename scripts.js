@@ -1,21 +1,25 @@
 $(function() {
-  const $submit = $('#submit');
-  const $favorites = $('#favorites');
-  const $newForm = $('#new-form');
-  const $stories = $('#stories');
-  const $title = $('#title');
-  const $url = $('#url');
-  const $clearFilter = $('.navbar-right');
-  const $menuLogin = $('#menu-login');
-  const $loginForm = $('#login-form');
-  const $menuSignup = $('#menu-signup');
-  const $signupForm = $('#signup-form');
+  const $submit = $("#submit");
+  const $favorites = $("#favorites");
+  const $newForm = $("#new-form");
+  const $stories = $("#stories");
+  const $title = $("#title");
+  const $url = $("#url");
+  const $clearFilter = $(".navbar-right");
+  const $menuLogin = $("#menu-login");
+  const $loginForm = $("#login-form");
+  const $menuSignup = $("#menu-signup");
+  const $signupForm = $("#signup-form");
+  const $menuProfile = $("#menu-profile");
+  const $profileForm = $("#profile-form");
 
-  if (localStorage.getItem('token')) {
+  if (localStorage.getItem("token")) {
     User.stayLoggedIn(user => {
-      populateStoryList();
-      $('p.display-user').text(user.username);
+      populateUserStoryList();
+      updateDisplayedUserInfo();
     });
+  } else {
+    populateStoryList();
   }
 
   $submit.click(function() {
@@ -23,6 +27,10 @@ $(function() {
   });
 
   $menuLogin.click(function() {
+    if ($menuLogin.text() === "Logout") {
+      localStorage.clear();
+      location.reload();
+    }
     $loginForm.slideToggle();
   });
 
@@ -30,14 +38,18 @@ $(function() {
     $signupForm.slideToggle();
   });
 
-  $signupForm.on('submit', function(e) {
+  $menuProfile.click(function() {
+    $profileForm.slideToggle();
+  });
+
+  $signupForm.on("submit", function(e) {
     e.preventDefault();
-    let username = $('#signup-username').val();
-    let password = $('#signup-password').val();
-    let name = $('#signup-name').val();
-    user = User.create(username, password, name, function(response) {
-      $('p.display-user').text(response.user.username);
-      $('#signup-form>form').trigger('reset');
+    let username = $("#signup-username").val();
+    let password = $("#signup-password").val();
+    let name = $("#signup-name").val();
+    User.create(username, password, name, function(response) {
+      updateDisplayedUserInfo();
+      $("#signup-form>form").trigger("reset");
       $signupForm.slideToggle();
     });
   });
@@ -46,30 +58,38 @@ $(function() {
   // cb should query for the values of Username/Password
   // and post to the api to log user in
   // update global user variable
-  $loginForm.on('submit', function(e) {
+  $loginForm.on("submit", function(e) {
     e.preventDefault();
-    let username = $('#login-username').val();
-    let password = $('#login-password').val();
-    user = User.login(username, password, function(response) {
-      $('p.display-user').text(response.user.username);
-      $('#login-form>form').trigger('reset');
-      console.log(`pre-reload`);
+    let username = $("#login-username").val();
+    let password = $("#login-password").val();
+    User.login(username, password, function(response) {
+      updateDisplayedUserInfo();
+      $("#login-form>form").trigger("reset");
       location.reload();
-      console.log(`post-reload`);
       $loginForm.slideToggle();
     });
   });
 
-  $newForm.on('submit', addStory);
+  $("#profile-password, #profile-password-confirm").on(
+    "keyup",
+    checkForPasswordMatch
+  );
 
-  $stories.on('click', 'small', filterByHost);
+  $("#profile-form").on("submit", submitUserUpdate);
 
-  $stories.on('click', '.fa-star', toggleFavorite);
+  $newForm.on("submit", addStory);
 
-  $stories.on('click', '.fa-trash-alt', removeOwnStory);
-  // $stories.on('click', '.fa-pencil-alt', editStory);
+  $stories.on("click", "small", filterByHost);
 
-  $favorites.on('click', filterByFavoriteOrShowAll);
+  $stories.on("click", ".fa-star", toggleFavorite);
+
+  $stories.on("click", ".fa-trash-alt", removeOwnStory);
+
+  $stories.on("click", ".fa-pencil-alt", revealEditMenu);
+
+  $stories.on("click", ".update-submit", editStory);
+
+  $favorites.on("click", filterByFavoriteOrShowAll);
 
   function addStory(e) {
     e.preventDefault();
@@ -80,36 +100,38 @@ $(function() {
       let $ownStoryElement = attachStoryElement(
         newStory.title,
         newStory.url,
-        'prepend'
+        "prepend"
       );
-      grantAccessToOwnStories(newStory.storyId, $ownStoryElement);
-      $submit.trigger('click');
+      grantAccessToOwnStory($ownStoryElement);
+      $submit.trigger("click");
     });
   }
 
   function attachStoryElement(title, url, prepend) {
-    let $newLink = $('<a>', {
+    let $newLink = $("<a>", {
       text: ` ${title}`,
       href: url,
-      target: '_blank'
+      target: "_blank"
     });
     // get short hostname: http://foo.bar.baz.com/page.html -> baz.com
+
     let hostname = $newLink
-      .prop('hostname')
-      .split('.')
+      .prop("hostname")
+      .split(".")
       .slice(-2)
-      .join('.');
-    let $small = $('<small>', {
+      .join(".");
+    let $small = $("<small>", {
       text: `(${hostname})`
     });
 
-    let $star = $('<span>', {
-      class: 'far fa-star'
+    let $star = $("<span>", {
+      class: "far fa-star"
     });
 
-    let $newStory = $('<li>').append($star, $newLink, $small);
-    $title.val('');
-    $url.val('');
+    let $newStory = $("<li>").append($star, $newLink, $small);
+    // reset new submission form
+    $title.val("");
+    $url.val("");
     if (prepend) {
       $stories.prepend($newStory);
     } else {
@@ -121,34 +143,34 @@ $(function() {
   function filterByHost(e) {
     let currentHostname = $(e.target).text();
     $stories
-      .children('li')
+      .children("li")
       .filter(function(i, el) {
         return (
           $(el)
-            .children('small')
+            .children("small")
             .text() !== currentHostname
         );
       })
       .hide();
 
-    $stories.addClass('hide-numbers');
+    $stories.addClass("hide-numbers");
     $clearFilter.show();
-    $favorites.text('all');
+    $favorites.text("all");
   }
 
   function toggleFavorite(e) {
     let storyId = getStoryIdFromElement($(e.target));
 
     // not a favorite
-    if ($(e.target).hasClass('far')) {
-      user.addFavorite(storyId, () => $(e.target).toggleClass('far fas'));
+    if ($(e.target).hasClass("far")) {
+      user.addFavorite(storyId, () => $(e.target).toggleClass("far fas"));
     } else {
-      user.removeFavorite(storyId, () => $(e.target).toggleClass('far fas'));
+      user.removeFavorite(storyId, () => $(e.target).toggleClass("far fas"));
     }
   }
 
   function getStoryIdFromElement($element) {
-    if ($element.parent().is('li')) {
+    if ($element.parent().is("li")) {
       var $parent = $element.parent();
     } else {
       var $parent = $element.parent().parent();
@@ -158,61 +180,92 @@ $(function() {
   }
 
   function filterByFavoriteOrShowAll(e) {
-    if ($favorites.text() === 'favorites') {
+    if ($favorites.text() === "favorites") {
       $stories
-        .children('li')
+        .children("li")
         .filter(function(i, el) {
           return $(el)
-            .children('.fa-star')
-            .hasClass('far');
+            .children(".fa-star")
+            .hasClass("far");
         })
         .hide();
-      $stories.addClass('hide-numbers');
-      $favorites.text('all');
+      $stories.addClass("hide-numbers");
+      $favorites.text("all");
     } else {
       // show everything
-      $stories.children('li').show();
-      $stories.removeClass('hide-numbers');
-      $favorites.text('favorites');
+      $stories.children("li").show();
+      $stories.removeClass("hide-numbers");
+      $favorites.text("favorites");
     }
   }
 
-  function populateStoryList() {
+  function populateUserStoryList() {
     StoryList.getStories(function(globalStoryList) {
       let favoriteIds = new Set(user.favorites.map(story => story.storyId));
       let ownStoryIds = new Set(user.ownStories.map(story => story.storyId));
       for (let story of globalStoryList.stories) {
         let $element = attachStoryElement(story.title, story.url);
-        starPreviousFavorites(story.storyId, favoriteIds, $element);
-
+        if (favoriteIds.has(story.storyId)) {
+          starPreviousFavorite($element);
+        }
         if (ownStoryIds.has(story.storyId)) {
-          grantAccessToOwnStories(story.storyId, $element);
+          grantAccessToOwnStory($element);
         }
       }
     });
   }
 
-  function starPreviousFavorites(storyId, favoriteIds, $element) {
-    if (favoriteIds.has(storyId)) {
-      $element.children('span').toggleClass('far fas');
-    }
+  // When nobody is logged in
+  function populateStoryList() {
+    StoryList.getStories(function(globalStoryList) {
+      for (let story of globalStoryList.stories) {
+        attachStoryElement(story.title, story.url);
+      }
+    });
   }
 
-  function grantAccessToOwnStories(storyId, $element) {
+  function starPreviousFavorite($element) {
+    $element.children("span").toggleClass("far fas");
+  }
+
+  function grantAccessToOwnStory($element) {
     let ownButtons = $(`<div class = "d-inline float-right">`);
     let trashCan = $(`<span class="fas fa-trash-alt mr-2"></span>`);
     let editPencil = $(`<span class="fas fa-pencil-alt mr-2"></span>`);
     ownButtons.append(editPencil).append(trashCan);
     $element.append(ownButtons);
-    // need to add a remove button to these ownStories
-    // implement / add event liostener to removebutton
-    // also add a edit button to this part
+    $element.append(
+      $(`<div class="update-form">
+    <form class="form-horizontal">
+      <div class="form-group row">
+        <label for="title" class="pl-4 col-sm-1 form-label">title</label>
+        <div class="col-sm-6">
+          <input type="text" class="form-control update-title"
+                 autocomplete="off">
+        </div>
+      </div>
+      <div class="form-group row">
+        <label for="url" class="pl-4 col-sm-1 form-label">url</label>
+        <div class="col-sm-6">
+          <input type="url" class="form-control update-url"
+                 autocomplete="off">
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+          <button type="submit" class="btn btn-primary update-submit">Update</button>
+          <button type="submit" class="btn btn-secondary update-cancel">Cancel</button>
+        </div>
+      </div>
+    </form>
+  </div>`)
+    );
   }
 
   function removeOwnStory(e) {
     let storyName = $(e.target)
       .parent()
-      .siblings('a')
+      .siblings("a")
       .text();
     if (confirm(`Are you sure you want to delete ${storyName}?`)) {
       let storyId = getStoryIdFromElement($(e.target));
@@ -224,9 +277,125 @@ $(function() {
       });
     }
   }
-});
 
-//  <div class = "d-inline float-right">
-// <span class="far fa-trash-alt"></span>
-// <span class="fas fa-pencil-alt"></span>
-// </div>
+  function updateDisplayedUserInfo() {
+    $("p.display-user").text(`${user.name.split(" ")[0]} (${user.username})`);
+    $("#profile-username").val(user.username);
+    $("#profile-name").val(user.name);
+    $(".p-created").text(user.createdAt);
+    $(".p-updated").text(user.updatedAt);
+    $menuLogin.text("Logout");
+    $("#welcome-p").text("Welcome,");
+  }
+
+  function checkForPasswordMatch() {
+    if ($("#profile-password").val() === $("#profile-password-confirm").val()) {
+      if (
+        !$("#profile-password, #profile-password-confirm").hasClass("is-valid")
+      ) {
+        $("#profile-password, #profile-password-confirm").toggleClass(
+          "is-valid not-valid"
+        );
+      }
+    } else {
+      if (
+        $("#profile-password, #profile-password-confirm").hasClass("is-valid")
+      ) {
+        $("#profile-password, #profile-password-confirm").toggleClass(
+          "is-valid not-valid"
+        );
+      }
+    }
+  }
+
+  function submitUserUpdate(e) {
+    e.preventDefault();
+    if ($("#profile-password").val() === $("#profile-password-confirm").val()) {
+      let name = $("#profile-name").val();
+      let password = $("#profile-password").val();
+      if (!name && !password) {
+        return;
+      }
+      let userDetails = {};
+      if (name) {
+        userDetails.name = name;
+      }
+      if (password) {
+        userDetails.password = password;
+      }
+      $("#profile-form>form").trigger("reset");
+      $profileForm.slideToggle();
+
+      user.update(userDetails, updateDisplayedUserInfo);
+      alert("Successfully updated information");
+    }
+  }
+
+  // after the pencil has been clicked
+  function revealEditMenu(e) {
+    $(e.target)
+      .parent()
+      .next()
+      .slideToggle();
+  }
+
+  // submit-update has been clicked
+  function editStory(e) {
+    e.preventDefault();
+    let $form = $(e.target)
+      .parent()
+      .parent()
+      .parent();
+    let title = $form
+      .children()
+      .children()
+      .children("input.update-title")
+      .val();
+    let url = $form
+      .children()
+      .children()
+      .children("input.update-url")
+      .val();
+    let storyIndex = $form.parent().index();
+    let story = storyList.stories[storyIndex];
+    let storyData = { storyId: story.storyId };
+
+    if (title) {
+      storyData.title = title;
+    }
+
+    if (url) {
+      storyData.url = url;
+    }
+
+    story.update(user, storyData, story => {
+      $form.trigger("reset");
+      $form.parent().slideToggle();
+      $form
+        .parent()
+        .siblings("a")
+        .text(story.title)
+        .attr('href', story.url);
+      $form
+        .parent()
+        .siblings("small")
+        .text(`(${getShortLink(story.url)})`);
+    });
+
+    function getShortLink(url) {
+      let shortLink = "";
+    
+      if (url.slice(0, 13).includes("www.")) {
+        shortLink = url.slice(url.indexOf(".") + 1);
+      } else {
+        shortLink = url.slice(url.indexOf("//") + 2);
+      }
+    
+      if (shortLink.indexOf("/") === -1) {
+        return shortLink.slice(0);
+      } else {
+        return shortLink.slice(0, shortLink.indexOf("/"));
+      }
+    }
+      }
+});

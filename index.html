@@ -33,6 +33,10 @@
   </ul>
 
     <span class="nav-item">
+      <a href="javascript:void(0)" class="nav-link" id="menu-profile">Profile</a>
+    </span>
+
+    <span class="nav-item">
       <a href="javascript:void(0)" class="nav-link" id="menu-login">Login</a>
     </span>
 
@@ -40,8 +44,7 @@
         <a href="javascript:void(0)" class="nav-link" id="menu-signup">Sign Up</a>
       </span>
 
-    <span class="nav-item text-center text-dark">
-      Logged in as: <p class="display-user"></p>
+    <span class="nav-item text-center text-dark"><p id="welcome-p"></p><p class="display-user"></p>
     </span>
     
 
@@ -66,6 +69,45 @@
     <div class="form-group">
       <div class="col-sm-offset-2 col-sm-10">
         <button type="submit" class="btn btn-primary">Login</button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<div id="profile-form">
+  <form class="form-horizontal">
+    <div class="form-group row">
+      <label for="profile-username" class="pl-4 col-sm-1 form-label">Username</label>
+      <div class="col-sm-6 ml-5">
+        <input type="text" class="form-control" id="profile-username"
+               autocomplete="off" disabled="disabled">
+      </div>
+    </div>
+    <div class="form-group row">
+        <label for="profile-name" class="pl-4 col-sm-1 form-label">Name</label>
+        <div class="col-sm-6 ml-5">
+          <input required type="text" class="form-control" id="profile-name"
+                 autocomplete="off">
+        </div>
+      </div>
+    <div class="form-group row">
+      <label for="profile-password" class="pl-4 col-sm-1 form-label">Password</label>
+      <div class="col-sm-6 ml-5">
+        <input required type="password" class="form-control is-valid" id="profile-password"
+               autocomplete="off">
+      </div>
+    </div>
+    <div class="form-group row">
+      <label for="profile-password-confirm" class="pl-4 col-sm-1 form-label">Confirm</label>
+      <div class="col-sm-6 ml-5">
+        <input required type="password" class="form-control is-valid" id="profile-password-confirm"
+               autocomplete="off">
+      </div>
+    </div>
+    <span>Created :<p class="p-created"></p></span><span>Updated: <p class="p-updated"></p></span>
+    <div class="form-group">
+      <div class="col-sm-offset-2 col-sm-10">
+        <button type="submit" class="btn btn-primary">Update Details</button>
       </div>
     </div>
   </form>
@@ -133,15 +175,33 @@
     <small>(visualgo.net)</small>
     <div class = "d-inline float-right">
       <span class="fas fa-trash-alt mr-2"></span>
-      <span class="fas fa-pencil-alt mr-4"></span>
+      <span class="fas fa-pencil-alt mr-2"></span>
     </div>
-  </li>
-  <li>
-    <span class="far fa-star"></span>
-    <a target="_blank"
-       href="https://www.rithmschool.com/blog/problem-solving-strategies-01">
-      Problem Solving with Rithm</a>
-    <small>(rithmschool.com)</small>
+
+    <div id="update-form">
+      <form class="form-horizontal">
+        <div class="form-group row">
+          <label for="title" class="pl-4 col-sm-1 form-label">title</label>
+          <div class="col-sm-6">
+            <input type="text" class="form-control" id="update-title"
+                   autocomplete="off">
+          </div>
+        </div>
+        <div class="form-group row">
+          <label for="url" class="pl-4 col-sm-1 form-label">url</label>
+          <div class="col-sm-6">
+            <input type="url" class="form-control" id="update-url"
+                   autocomplete="off">
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="col-sm-offset-2 col-sm-10">
+            <button type="submit" class="btn btn-primary" id="update-submit">Update</button>
+            <button type="submit" class="btn btn-secondary" id="update-cancel">Cancel</button>
+          </div>
+        </div>
+      </form>
+    </div>
   </li>
   <li>
     <span class="far fa-star"></span>
@@ -149,6 +209,15 @@
        href="https://www.amazon.com/Power-Up-Unlocking-Hidden-Mathematics-Video/dp/0691161518/">
       Buy this book!</a>
     <small>(amazon.com)</small>
+  </li> -->
+
+
+  <!--li>
+    <span class="far fa-star"></span>
+    <a target="_blank"
+       href="https://www.rithmschool.com/blog/problem-solving-strategies-01">
+      Problem Solving with Rithm</a>
+    <small>(rithmschool.com)</small>
   </li>
   <li>
     <span class="far fa-star"></span>

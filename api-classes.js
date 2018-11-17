@@ -1,4 +1,4 @@
-const BASE_URL = 'https://hack-or-snooze-v2.herokuapp.com';
+const BASE_URL = "https://hack-or-snooze-v2.herokuapp.com";
 let storyList;
 let user;
 
@@ -53,22 +53,22 @@ class StoryList {
   removeStory(user, storyId, probablyDOMStuff) {
     $.ajax({
       url: `${BASE_URL}/stories/${storyId}`,
-      type: 'DELETE',
+      type: "DELETE",
       data: {
-        token: user.loginToken,
-        success: () => {
-          let storyListIndex = this.stories.findIndex(
-            story => story.storyId === storyId
-          );
-          this.stories.splice(storyListIndex, 1);
-          storyListIndex = user.ownStories.findIndex(
-            story => story.storyId === storyId
-          );
-          user.ownStories.splice(storyListIndex, 1);
-          // prompt indicates that response will be an updated list of stories.
-          // May need to call other methods on it
-          probablyDOMStuff(this);
-        }
+        token: user.loginToken
+      },
+      success: () => {
+        let storyListIndex = this.stories.findIndex(
+          story => story.storyId === storyId
+        );
+        this.stories.splice(storyListIndex, 1);
+        storyListIndex = user.ownStories.findIndex(
+          story => story.storyId === storyId
+        );
+        user.ownStories.splice(storyListIndex, 1);
+        // prompt indicates that response will be an updated list of stories.
+        // May need to call other methods on it
+        probablyDOMStuff(this);
       }
     });
   }
@@ -81,8 +81,8 @@ class User {
       (this.loginToken = token),
       (this.favorites = []),
       (this.ownStories = []),
-      (this.createdAt = ''); //assigned when creating or retrieveDetails
-    this.updatedAt = ''; //assigned when creating or retrieveDetails
+      (this.createdAt = ""); //assigned when creating or retrieveDetails
+    this.updatedAt = ""; //assigned when creating or retrieveDetails
   }
 
   //probablyDOMStuff should update global user
@@ -96,8 +96,8 @@ class User {
           response.user.name,
           response.token
         );
-        localStorage.setItem('username', response.user.username);
-        localStorage.setItem('token', response.token);
+        localStorage.setItem("username", response.user.username);
+        localStorage.setItem("token", response.token);
         user.createdAt = response.user.createdAt;
         user.updatedAt = response.user.updatedAt;
         // solution and prompt differ. Solution returns the new user object
@@ -108,16 +108,14 @@ class User {
 
   // probablyDOMStuff function should update user's login token and global user variable
   static login(username, password, probablyDOMStuff) {
-    console.log(`just starting login`);
     $.post(`${BASE_URL}/login`, { user: { username, password } }, response => {
       user = new User(
         response.user.username,
         response.user.name,
         response.token
       );
-      console.log(`in User.login`);
-      localStorage.setItem('username', response.user.username);
-      localStorage.setItem('token', response.token);
+      localStorage.setItem("username", response.user.username);
+      localStorage.setItem("token", response.token);
       user.createdAt = response.user.createdAt;
       user.updatedAt = response.user.updatedAt;
       // solution and prompt differ. Solution returns the user object
@@ -128,9 +126,9 @@ class User {
   static stayLoggedIn(probablyDOMStuff) {
     // if (localStorage.getItem("token")) {
     user = new User(
-      localStorage.getItem('username'),
-      '', // Will get filled when retrieveDetails is called
-      localStorage.getItem('token')
+      localStorage.getItem("username"),
+      "", // Will get filled when retrieveDetails is called
+      localStorage.getItem("token")
     );
     user.retrieveDetails(probablyDOMStuff);
   }
@@ -166,12 +164,12 @@ class User {
   removeFavorite(storyId, probablyDOMStuff) {
     $.ajax({
       url: `${BASE_URL}/users/${user.username}/favorites/${storyId}`,
-      type: 'DELETE',
+      type: "DELETE",
       data: {
-        token: this.loginToken,
-        success: () => {
-          this.retrieveDetails(() => probablyDOMStuff(this));
-        }
+        token: this.loginToken
+      },
+      success: () => {
+        this.retrieveDetails(() => probablyDOMStuff(this));
       }
     });
   }
@@ -180,15 +178,15 @@ class User {
     const { username, favorites, ...userDetails } = userData;
     $.ajax({
       url: `${BASE_URL}/users/${this.username}`,
-      type: 'PATCH',
+      type: "PATCH",
       data: {
-        token: localStorage.getItem('token'),
-        user: userDetails,
-        success: () => {
-          this.name = response.user.name;
-          this.password = userDetails.password || this.password;
-          probablyDOMStuff(this);
-        }
+        token: localStorage.getItem("token"),
+        user: userDetails
+      },
+      success: response => {
+        this.name = response.user.name;
+        // this.password = userDetails.password || this.password;
+        probablyDOMStuff(this);
       }
     });
   }
@@ -196,8 +194,9 @@ class User {
   remove(probablyDOMStuff) {
     $.ajax({
       url: `${BASE_URL}/users/${this.username}`,
-      type: 'DELETE',
-      data: { token: this.loginToken, success: probablyDOMStuff }
+      type: "DELETE",
+      data: { token: this.loginToken },
+      success: probablyDOMStuff
     });
   }
 }
@@ -215,16 +214,16 @@ class Story {
     const { storyId, ...storyDetails } = storyData;
     $.ajax({
       url: `${BASE_URL}/stories/${storyId}`,
-      type: 'PATCH',
+      type: "PATCH",
       data: {
         token: user.loginToken,
-        story: storyDetails,
-        success: response => {
-          this.author = response.story.author;
-          this.title = response.story.title;
-          this.url = response.story.url;
-          probablyDOMStuff(this);
-        }
+        story: storyDetails
+      },
+      success: response => {
+        this.author = response.story.author;
+        this.title = response.story.title;
+        this.url = response.story.url;
+        probablyDOMStuff(this);
       }
     });
   }

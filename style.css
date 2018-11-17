@@ -23,13 +23,17 @@ body {
 #new-form,
 #stories,
 #login-form,
-#signup-form {
+#signup-form,
+#profile-form,
+.update-form {
   background-color: #f6f6ef;
 }
 
 #new-form,
 #login-form,
-#signup-form {
+#signup-form,
+#profile-form,
+.update-form {
   display: none;
 }
 
