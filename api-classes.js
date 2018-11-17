@@ -1,24 +1,6 @@
-const BASE_URL = "https://hack-or-snooze-v2.herokuapp.com";
+const BASE_URL = 'https://hack-or-snooze-v2.herokuapp.com';
 let storyList;
 let user;
-
-// function login(username, password) {
-//   $.post(`${BASE_URL}/login`, { user: { username, password } }, storeToken);
-// }
-
-// function storeToken(response) {
-//   localStorage.setItem('token', response.token);
-// }
-
-// function getToken() {
-//   let token = localStorage.getItem('token');
-//   if (token) {
-//     return token;
-//   } else {
-//     alert('Please login first.');
-//     return new Error('No token found, login first');
-//   }
-// }
 
 class StoryList {
   constructor(stories) {
@@ -34,6 +16,16 @@ class StoryList {
       });
       storyList = new StoryList(stories);
       return probablyDOMStuff(storyList);
+    });
+  }
+
+  getMoreStories(skip, limit, probablyDOMStuff) {
+    $.getJSON(`${BASE_URL}/stories`, { skip, limit }, response => {
+      const newStories = response.stories.map(function(story) {
+        return new Story(story);
+      });
+      this.stories = this.stories.concat(newStories);
+      return probablyDOMStuff(this);
     });
   }
 
@@ -53,7 +45,7 @@ class StoryList {
   removeStory(user, storyId, probablyDOMStuff) {
     $.ajax({
       url: `${BASE_URL}/stories/${storyId}`,
-      type: "DELETE",
+      type: 'DELETE',
       data: {
         token: user.loginToken
       },
@@ -81,8 +73,8 @@ class User {
       (this.loginToken = token),
       (this.favorites = []),
       (this.ownStories = []),
-      (this.createdAt = ""); //assigned when creating or retrieveDetails
-    this.updatedAt = ""; //assigned when creating or retrieveDetails
+      (this.createdAt = ''); //assigned when creating or retrieveDetails
+    this.updatedAt = ''; //assigned when creating or retrieveDetails
   }
 
   //probablyDOMStuff should update global user
@@ -96,8 +88,8 @@ class User {
           response.user.name,
           response.token
         );
-        localStorage.setItem("username", response.user.username);
-        localStorage.setItem("token", response.token);
+        localStorage.setItem('username', response.user.username);
+        localStorage.setItem('token', response.token);
         user.createdAt = response.user.createdAt;
         user.updatedAt = response.user.updatedAt;
         // solution and prompt differ. Solution returns the new user object
@@ -114,8 +106,8 @@ class User {
         response.user.name,
         response.token
       );
-      localStorage.setItem("username", response.user.username);
-      localStorage.setItem("token", response.token);
+      localStorage.setItem('username', response.user.username);
+      localStorage.setItem('token', response.token);
       user.createdAt = response.user.createdAt;
       user.updatedAt = response.user.updatedAt;
       // solution and prompt differ. Solution returns the user object
@@ -126,9 +118,9 @@ class User {
   static stayLoggedIn(probablyDOMStuff) {
     // if (localStorage.getItem("token")) {
     user = new User(
-      localStorage.getItem("username"),
-      "", // Will get filled when retrieveDetails is called
-      localStorage.getItem("token")
+      localStorage.getItem('username'),
+      '', // Will get filled when retrieveDetails is called
+      localStorage.getItem('token')
     );
     user.retrieveDetails(probablyDOMStuff);
   }
@@ -164,7 +156,7 @@ class User {
   removeFavorite(storyId, probablyDOMStuff) {
     $.ajax({
       url: `${BASE_URL}/users/${user.username}/favorites/${storyId}`,
-      type: "DELETE",
+      type: 'DELETE',
       data: {
         token: this.loginToken
       },
@@ -178,9 +170,9 @@ class User {
     const { username, favorites, ...userDetails } = userData;
     $.ajax({
       url: `${BASE_URL}/users/${this.username}`,
-      type: "PATCH",
+      type: 'PATCH',
       data: {
-        token: localStorage.getItem("token"),
+        token: localStorage.getItem('token'),
         user: userDetails
       },
       success: response => {
@@ -194,7 +186,7 @@ class User {
   remove(probablyDOMStuff) {
     $.ajax({
       url: `${BASE_URL}/users/${this.username}`,
-      type: "DELETE",
+      type: 'DELETE',
       data: { token: this.loginToken },
       success: probablyDOMStuff
     });
@@ -214,7 +206,7 @@ class Story {
     const { storyId, ...storyDetails } = storyData;
     $.ajax({
       url: `${BASE_URL}/stories/${storyId}`,
-      type: "PATCH",
+      type: 'PATCH',
       data: {
         token: user.loginToken,
         story: storyDetails
